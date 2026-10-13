@@ -41,7 +41,7 @@ Dùng điện thoại như **camera giám sát**:
 
 | Người | Vai | Chịu trách nhiệm chính |
 |-------|-----|------------------------|
-| **P1** | Team Lead + UI shell | Repo, kiến trúc, navigation, merge, demo |
+| **P1** | Team Lead + UI shell | Repo, kiến trúc, navigation, merge, demo — branch `khang-ui` |
 | **P2** | Camera | CameraX preview, đổi cam, flash, lifecycle |
 | **P3** | Recording | Ghi/dừng video, lưu file, metadata |
 | **P4** | Motion detect | So sánh frame, độ nhạy, trigger sự kiện |
@@ -61,7 +61,7 @@ vn.edu.usth.camerasystem/
 
 ### Branch gợi ý
 
-- `feat/p1-ui`
+- `khang-ui` (P1)
 - `feat/p2-camera`
 - `feat/p3-record`
 - `feat/p4-motion`

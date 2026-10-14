@@ -8,13 +8,19 @@
 
     <string name="monitor_title">Monitor</string>
     <string name="monitor_placeholder">Live camera preview sẽ gắn ở đây (P2)</string>
-    <string name="monitor_hint">P2 sẽ gắn CameraX PreviewView vào khung trên.</string>
+    <string name="monitor_hint">P2 gắn CameraX vào khung trên. P4 gọi AppController.onMotionDetected().</string>
     <string name="monitor_status_disarmed">Disarmed</string>
+    <string name="monitor_status_armed">Armed</string>
+    <string name="monitor_toggle_arm">Bật / tắt Armed</string>
+    <string name="monitor_simulate_motion">Giả lập motion (test Day 3)</string>
 
     <string name="events_title">Events</string>
     <string name="events_placeholder">Danh sách sự kiện sẽ hiện ở đây (P5)</string>
     <string name="events_empty">Chưa có sự kiện</string>
 
     <string name="settings_title">Settings</string>
-    <string name="settings_placeholder">Độ nhạy, PIN, Armed sẽ gắn ở đây (P6)</string>
+    <string name="settings_placeholder">PIN sẽ do P6 bổ sung. Armed &amp; độ nhạy đã nối AlertManager.</string>
+    <string name="settings_armed_label">Armed (giám sát)</string>
+    <string name="settings_sensitivity_label">Độ nhạy motion: %1$d</string>
 </resources>
+

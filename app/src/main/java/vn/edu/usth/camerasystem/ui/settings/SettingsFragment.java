@@ -18,7 +18,9 @@ import vn.edu.usth.camerasystem.alert.AlertManager;
 import vn.edu.usth.camerasystem.ui.AppController;
 
 /**
- * Settings tab — nối AlertManager (Armed + sensitivity). PIN do P6 bổ sung.
+ * Settings tab — nối AlertManager (Armed + sensitivity).
+ * Day 2: UI cơ bản với Switch Armed, SeekBar độ nhạy, ô PIN (chưa có logic PIN).
+ * P6 sẽ bổ sung logic PIN từ Day 3.
  */
 public class SettingsFragment extends Fragment {
 
@@ -38,13 +40,15 @@ public class SettingsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         alertManager = AppController.get().getAlertManager();
 
+        // ===== Armed switch =====
         SwitchMaterial switchArmed = view.findViewById(R.id.switch_armed);
-        SeekBar seekSensitivity = view.findViewById(R.id.seek_sensitivity);
-        sensitivityLabel = view.findViewById(R.id.sensitivity_label);
-
         switchArmed.setChecked(alertManager.isArmed());
         switchArmed.setOnCheckedChangeListener((buttonView, isChecked) ->
                 alertManager.setArmed(isChecked));
+
+        // ===== Sensitivity SeekBar =====
+        SeekBar seekSensitivity = view.findViewById(R.id.seek_sensitivity);
+        sensitivityLabel = view.findViewById(R.id.sensitivity_label);
 
         int sensitivity = alertManager.getSensitivity();
         seekSensitivity.setProgress(sensitivity);
@@ -66,6 +70,10 @@ public class SettingsFragment extends Fragment {
             public void onStopTrackingTouch(SeekBar seekBar) {
             }
         });
+
+        // ===== PIN =====
+        // TODO Day 3: đọc/ghi PIN từ SharedPreferences
+        // UI ô PIN đã có trong layout, logic sẽ bổ sung sau.
     }
 
     private void updateSensitivityLabel(int value) {

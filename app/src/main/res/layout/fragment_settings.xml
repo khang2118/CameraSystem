@@ -17,8 +17,9 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <!-- Card: Armed + Sensitivity -->
     <com.google.android.material.card.MaterialCardView
-        android:id="@+id/settings_card"
+        android:id="@+id/card_armed"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
@@ -35,6 +36,7 @@
             android:orientation="vertical"
             android:padding="20dp">
 
+            <!-- Armed switch -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -55,6 +57,7 @@
                     android:layout_height="wrap_content" />
             </LinearLayout>
 
+            <!-- Sensitivity -->
             <TextView
                 android:id="@+id/sensitivity_label"
                 android:layout_width="match_parent"
@@ -69,12 +72,57 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:max="100" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Card: PIN (Day 2 mock UI — logic Day 3) -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_pin"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:cardBackgroundColor="@color/surface"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="2dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/card_armed">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="@string/settings_placeholder"
+                android:text="@string/settings_pin_title"
+                android:textColor="@color/text_primary"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/et_pin"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:hint="@string/settings_pin_hint"
+                android:inputType="numberPassword"
+                android:maxLength="6" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_save_pin"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="@string/settings_save_pin" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/settings_pin_placeholder"
                 android:textColor="@color/text_secondary"
                 android:textSize="13sp" />
         </LinearLayout>

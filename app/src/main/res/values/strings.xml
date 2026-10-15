@@ -19,8 +19,12 @@
     <string name="events_empty">Chưa có sự kiện</string>
 
     <string name="settings_title">Settings</string>
-    <string name="settings_placeholder">PIN sẽ do P6 bổ sung. Armed &amp; độ nhạy đã nối AlertManager.</string>
     <string name="settings_armed_label">Armed (giám sát)</string>
     <string name="settings_sensitivity_label">Độ nhạy motion: %1$d</string>
-</resources>
 
+    <!-- PIN Settings (P6 Day 2 — UI only) -->
+    <string name="settings_pin_title">Mã PIN</string>
+    <string name="settings_pin_hint">Nhập mã PIN (4–6 số)</string>
+    <string name="settings_save_pin">Lưu PIN</string>
+    <string name="settings_pin_placeholder">Logic lưu PIN sẽ được bổ sung từ Day 3.</string>
+</resources>

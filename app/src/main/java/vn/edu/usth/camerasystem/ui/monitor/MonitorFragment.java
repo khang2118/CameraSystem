@@ -13,6 +13,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.camera.view.PreviewView;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
@@ -20,15 +21,18 @@ import com.google.android.material.button.MaterialButton;
 
 import vn.edu.usth.camerasystem.R;
 import vn.edu.usth.camerasystem.alert.AlertManager;
+import vn.edu.usth.camerasystem.camera.CameraController;
 import vn.edu.usth.camerasystem.ui.AppController;
 
-/** P2 camera permission and the existing P1 Armed/motion test controls. */
-public class MonitorFragment extends Fragment {
+/** P2 camera preview and the existing P1 Armed/motion test controls. */
+public class MonitorFragment extends Fragment implements CameraController.Listener {
 
     private TextView statusChip;
     private TextView cameraStatus;
+    private PreviewView previewView;
     private MaterialButton btnCameraPermission;
     private AlertManager alertManager;
+    private CameraController cameraController;
 
     private final ActivityResultLauncher<String> cameraPermission = registerForActivityResult(
             new ActivityResultContracts.RequestPermission(), granted -> {
@@ -49,8 +53,10 @@ public class MonitorFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         alertManager = AppController.get().getAlertManager();
+        cameraController = AppController.get().getCameraController();
         statusChip = view.findViewById(R.id.status_chip);
         cameraStatus = view.findViewById(R.id.camera_status);
+        previewView = view.findViewById(R.id.preview_view);
         btnCameraPermission = view.findViewById(R.id.btn_camera_permission);
 
         btnCameraPermission.setOnClickListener(v -> {
@@ -88,11 +94,31 @@ public class MonitorFragment extends Fragment {
     }
 
     private void refreshCamera() {
-        if (cameraStatus == null) return;
+        if (previewView == null || isHidden()) return;
         boolean granted = hasCameraPermission();
-        cameraStatus.setText(granted
-                ? R.string.camera_permission_granted : R.string.camera_permission_needed);
+        btnCameraPermission.setText(R.string.camera_permission_grant);
         btnCameraPermission.setVisibility(granted ? View.GONE : View.VISIBLE);
+        if (!granted) {
+            cameraController.stop();
+            cameraStatus.setText(R.string.camera_permission_needed);
+            return;
+        }
+        cameraStatus.setText(R.string.camera_loading);
+        cameraController.start(getViewLifecycleOwner(), previewView, this);
+    }
+
+    @Override
+    public void onCameraReady() {
+        if (cameraStatus == null) return;
+        cameraStatus.setText(R.string.camera_ready);
+    }
+
+    @Override
+    public void onCameraError(int messageId) {
+        if (cameraStatus == null) return;
+        cameraStatus.setText(messageId);
+        btnCameraPermission.setText(R.string.camera_retry);
+        btnCameraPermission.setVisibility(View.VISIBLE);
     }
 
     @Override

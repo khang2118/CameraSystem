@@ -119,6 +119,36 @@ public class CameraController {
         return camera != null;
     }
 
+    @MainThread
+    public int getLensFacing() {
+        return lensFacing;
+    }
+
+    @MainThread
+    public boolean canSwitchCamera() {
+        if (cameraProvider == null || camera == null) return false;
+        try {
+            return cameraProvider.hasCamera(selectorFor(oppositeLens()));
+        } catch (Exception error) {
+            Log.w(TAG, "Cannot query the other lens", error);
+            return false;
+        }
+    }
+
+    @MainThread
+    public boolean switchCamera() {
+        if (!canSwitchCamera() || lifecycleOwner == null || previewView == null || listener == null) {
+            return false;
+        }
+        LifecycleOwner owner = lifecycleOwner;
+        PreviewView view = previewView;
+        Listener cameraListener = listener;
+        lensFacing = oppositeLens();
+        stop();
+        start(owner, view, cameraListener);
+        return true;
+    }
+
     private int oppositeLens() {
         return lensFacing == CameraSelector.LENS_FACING_BACK
                 ? CameraSelector.LENS_FACING_FRONT : CameraSelector.LENS_FACING_BACK;

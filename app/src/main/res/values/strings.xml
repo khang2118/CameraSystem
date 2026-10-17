@@ -14,6 +14,11 @@
     <string name="monitor_toggle_arm">Bật / tắt Armed</string>
     <string name="monitor_simulate_motion">Giả lập motion (test Day 3)</string>
 
+    <string name="camera_permission_needed">Cấp quyền camera để xem hình trực tiếp.</string>
+    <string name="camera_permission_denied">Chưa có quyền camera. Hãy cấp quyền để xem hình trực tiếp.</string>
+    <string name="camera_permission_grant">Cấp quyền camera</string>
+    <string name="camera_permission_granted">Đã cấp quyền camera.</string>
+
     <string name="events_title">Events</string>
     <string name="events_placeholder">Danh sách sự kiện sẽ hiện ở đây (P5)</string>
     <string name="events_empty">Chưa có sự kiện</string>

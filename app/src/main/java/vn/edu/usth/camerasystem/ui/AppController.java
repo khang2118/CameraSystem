@@ -101,11 +101,6 @@ public final class AppController implements MotionListener {
             return;
         }
 
-        alertManager.showMotionAlert(
-                "Phát hiện chuyển động",
-                "Đang ghi clip… (score " + String.format("%.2f", score) + ")"
-        );
-
         // Stub: tự stop sau vài giây. P3 có thể thay bằng timer/CameraX callback thật.
         new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() ->
                 recordingController.stopRecording(new RecordingController.Callback() {
@@ -137,6 +132,10 @@ public final class AppController implements MotionListener {
                                 "Stub event — " + reason
                         );
                         eventRepository.addEvent(event);
+                        alertManager.showMotionAlert(
+                                "Phát hiện chuyển động",
+                                "Không thể lưu clip"
+                        );
                         Log.w(TAG, "recording failed: " + reason + " (placeholder event added)");
                     }
                 }), RECORD_DURATION_MS);

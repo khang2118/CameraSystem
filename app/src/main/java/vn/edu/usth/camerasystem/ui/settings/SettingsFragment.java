@@ -1,31 +1,37 @@
 package vn.edu.usth.camerasystem.ui.settings;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
 import vn.edu.usth.camerasystem.R;
 import vn.edu.usth.camerasystem.alert.AlertManager;
 import vn.edu.usth.camerasystem.ui.AppController;
 
-/**
- * Settings tab — nối AlertManager (Armed + sensitivity).
- * Day 2: UI cơ bản với Switch Armed, SeekBar độ nhạy, ô PIN (chưa có logic PIN).
- * P6 sẽ bổ sung logic PIN từ Day 3.
- */
+/** Màn hình cài đặt chế độ giám sát, độ nhạy và mã PIN. */
 public class SettingsFragment extends Fragment {
+
+    private static final String PREFS = "camera_security_prefs";
+    private static final String KEY_PIN = "pin";
 
     private AlertManager alertManager;
     private TextView sensitivityLabel;
+    private TextView pinStatus;
+    private EditText etPin;
 
     @Nullable
     @Override
@@ -40,13 +46,11 @@ public class SettingsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         alertManager = AppController.get().getAlertManager();
 
-        // ===== Armed switch =====
         SwitchMaterial switchArmed = view.findViewById(R.id.switch_armed);
         switchArmed.setChecked(alertManager.isArmed());
         switchArmed.setOnCheckedChangeListener((buttonView, isChecked) ->
                 alertManager.setArmed(isChecked));
 
-        // ===== Sensitivity SeekBar =====
         SeekBar seekSensitivity = view.findViewById(R.id.seek_sensitivity);
         sensitivityLabel = view.findViewById(R.id.sensitivity_label);
 
@@ -71,9 +75,53 @@ public class SettingsFragment extends Fragment {
             }
         });
 
-        // ===== PIN =====
-        // TODO Day 3: đọc/ghi PIN từ SharedPreferences
-        // UI ô PIN đã có trong layout, logic sẽ bổ sung sau.
+        etPin = view.findViewById(R.id.et_pin);
+        pinStatus = view.findViewById(R.id.tv_pin_status);
+        MaterialButton btnSavePin = view.findViewById(R.id.btn_save_pin);
+
+        refreshPinStatus();
+
+        btnSavePin.setOnClickListener(v -> savePin());
+    }
+
+    private SharedPreferences getPrefs() {
+        return requireContext().getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+    }
+
+    private void savePin() {
+        String pin = etPin.getText().toString().trim();
+
+        if (pin.isEmpty()) {
+            getPrefs().edit().remove(KEY_PIN).apply();
+            Toast.makeText(requireContext(), R.string.pin_removed, Toast.LENGTH_SHORT).show();
+            etPin.setText("");
+            refreshPinStatus();
+            return;
+        }
+
+        if (pin.length() < 4 || pin.length() > 6) {
+            Toast.makeText(requireContext(), R.string.pin_error_length, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (!pin.matches("\\d+")) {
+            Toast.makeText(requireContext(), R.string.pin_error_digits, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        getPrefs().edit().putString(KEY_PIN, pin).apply();
+        Toast.makeText(requireContext(), R.string.pin_saved, Toast.LENGTH_SHORT).show();
+        etPin.setText("");
+        refreshPinStatus();
+    }
+
+    private void refreshPinStatus() {
+        String saved = getPrefs().getString(KEY_PIN, null);
+        if (saved != null && !saved.isEmpty()) {
+            pinStatus.setText(getString(R.string.pin_status_set, saved.length()));
+        } else {
+            pinStatus.setText(R.string.pin_status_not_set);
+        }
     }
 
     private void updateSensitivityLabel(int value) {

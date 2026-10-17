@@ -42,6 +42,7 @@ public class CameraController {
     private LifecycleOwner lifecycleOwner;
     private PreviewView previewView;
     private Listener listener;
+    private int sessionId;
     private int lensFacing = CameraSelector.LENS_FACING_BACK;
 
     public CameraController(@NonNull Context context) {
@@ -60,10 +61,11 @@ public class CameraController {
         lifecycleOwner = owner;
         previewView = view;
         listener = cameraListener;
+        int currentSession = sessionId;
 
         ListenableFuture<ProcessCameraProvider> future = ProcessCameraProvider.getInstance(context);
         future.addListener(() -> {
-            if (!canStart()) return;
+            if (currentSession != sessionId || !canStart()) return;
             try {
                 cameraProvider = future.get();
                 bindCamera();
@@ -124,6 +126,7 @@ public class CameraController {
 
     @MainThread
     public void stop() {
+        sessionId++;
         Preview oldPreview = preview;
         preview = null;
         camera = null;

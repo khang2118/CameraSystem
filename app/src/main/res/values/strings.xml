@@ -7,7 +7,7 @@
     <string name="nav_settings">Settings</string>
 
     <string name="monitor_title">Monitor</string>
-    <string name="monitor_hint">Hình trực tiếp từ camera.</string>
+    <string name="monitor_hint">Camera dừng khi bạn rời Monitor hoặc ra khỏi ứng dụng.</string>
     <string name="monitor_status_disarmed">Disarmed</string>
     <string name="monitor_status_armed">Armed</string>
     <string name="monitor_toggle_arm">Bật / tắt Armed</string>

@@ -19,6 +19,7 @@
 
     <string name="camera_loading">Đang mở camera…</string>
     <string name="camera_ready">Camera đã sẵn sàng.</string>
+    <string name="camera_switch">Đổi camera trước / sau</string>
     <string name="camera_retry">Thử mở lại camera</string>
     <string name="camera_not_available">Camera được chọn không khả dụng.</string>
     <string name="camera_error">Chưa mở được camera. Hãy thử lại.</string>

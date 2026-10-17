@@ -31,6 +31,7 @@ public class MonitorFragment extends Fragment implements CameraController.Listen
     private TextView cameraStatus;
     private PreviewView previewView;
     private MaterialButton btnCameraPermission;
+    private MaterialButton btnSwitchCamera;
     private AlertManager alertManager;
     private CameraController cameraController;
 
@@ -58,10 +59,20 @@ public class MonitorFragment extends Fragment implements CameraController.Listen
         cameraStatus = view.findViewById(R.id.camera_status);
         previewView = view.findViewById(R.id.preview_view);
         btnCameraPermission = view.findViewById(R.id.btn_camera_permission);
+        btnSwitchCamera = view.findViewById(R.id.btn_switch_camera);
 
         btnCameraPermission.setOnClickListener(v -> {
             if (hasCameraPermission()) refreshCamera();
             else cameraPermission.launch(Manifest.permission.CAMERA);
+        });
+        btnSwitchCamera.setOnClickListener(v -> {
+            btnSwitchCamera.setEnabled(false);
+            cameraStatus.setText(R.string.camera_loading);
+            if (!cameraController.switchCamera()) {
+                cameraStatus.setText(R.string.camera_not_available);
+                Toast.makeText(requireContext(), R.string.camera_not_available,
+                        Toast.LENGTH_SHORT).show();
+            }
         });
 
         MaterialButton btnToggleArm = view.findViewById(R.id.btn_toggle_arm);
@@ -98,6 +109,7 @@ public class MonitorFragment extends Fragment implements CameraController.Listen
         boolean granted = hasCameraPermission();
         btnCameraPermission.setText(R.string.camera_permission_grant);
         btnCameraPermission.setVisibility(granted ? View.GONE : View.VISIBLE);
+        btnSwitchCamera.setEnabled(false);
         if (!granted) {
             cameraController.stop();
             cameraStatus.setText(R.string.camera_permission_needed);
@@ -111,6 +123,7 @@ public class MonitorFragment extends Fragment implements CameraController.Listen
     public void onCameraReady() {
         if (cameraStatus == null) return;
         cameraStatus.setText(R.string.camera_ready);
+        btnSwitchCamera.setEnabled(cameraController.canSwitchCamera());
     }
 
     @Override
@@ -119,6 +132,7 @@ public class MonitorFragment extends Fragment implements CameraController.Listen
         cameraStatus.setText(messageId);
         btnCameraPermission.setText(R.string.camera_retry);
         btnCameraPermission.setVisibility(View.VISIBLE);
+        btnSwitchCamera.setEnabled(false);
     }
 
     @Override
@@ -149,6 +163,7 @@ public class MonitorFragment extends Fragment implements CameraController.Listen
         cameraStatus = null;
         previewView = null;
         btnCameraPermission = null;
+        btnSwitchCamera = null;
         super.onDestroyView();
     }
 

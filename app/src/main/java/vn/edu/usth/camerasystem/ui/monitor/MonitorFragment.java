@@ -128,6 +128,30 @@ public class MonitorFragment extends Fragment implements CameraController.Listen
         refreshCamera();
     }
 
+    @Override
+    public void onPause() {
+        cameraController.stop();
+        super.onPause();
+    }
+
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        if (cameraController == null) return;
+        if (hidden) cameraController.stop();
+        else if (isResumed()) refreshCamera();
+    }
+
+    @Override
+    public void onDestroyView() {
+        cameraController.stop();
+        statusChip = null;
+        cameraStatus = null;
+        previewView = null;
+        btnCameraPermission = null;
+        super.onDestroyView();
+    }
+
     private void refreshArmedUi() {
         boolean armed = alertManager.isArmed();
         statusChip.setText(armed ? R.string.monitor_status_armed : R.string.monitor_status_disarmed);

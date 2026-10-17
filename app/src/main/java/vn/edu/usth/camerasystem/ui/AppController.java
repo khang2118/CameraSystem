@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 
 import vn.edu.usth.camerasystem.alert.AlertManager;
 import vn.edu.usth.camerasystem.alert.stub.PrefsAlertManager;
+import vn.edu.usth.camerasystem.camera.CameraController;
 import vn.edu.usth.camerasystem.camera.RecordingController;
 import vn.edu.usth.camerasystem.camera.stub.NoOpRecordingController;
 import vn.edu.usth.camerasystem.motion.MotionListener;
@@ -36,6 +37,7 @@ public final class AppController implements MotionListener {
     private final AlertManager alertManager;
     private final EventRepository eventRepository;
     private final RecordingController recordingController;
+    private final CameraController cameraController;
 
     private long lastMotionHandledAt;
 
@@ -44,6 +46,7 @@ public final class AppController implements MotionListener {
         alertManager = new PrefsAlertManager(app);
         eventRepository = new InMemoryEventRepository();
         recordingController = new NoOpRecordingController();
+        cameraController = new CameraController(app);
     }
 
     public static synchronized void init(@NonNull Context context) {
@@ -73,6 +76,12 @@ public final class AppController implements MotionListener {
     @NonNull
     public RecordingController getRecordingController() {
         return recordingController;
+    }
+
+    /** Camera preview controller used by the Monitor screen. */
+    @NonNull
+    public CameraController getCameraController() {
+        return cameraController;
     }
 
     /**

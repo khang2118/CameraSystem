@@ -43,15 +43,10 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/monitor_title">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:gravity="center"
-            android:padding="24dp"
-            android:text="@string/monitor_placeholder"
-            android:textColor="@color/white"
-            android:textSize="15sp" />
+        <androidx.camera.view.PreviewView
+            android:id="@+id/camera_preview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
     </FrameLayout>
 
     <com.google.android.material.button.MaterialButton
@@ -64,6 +59,17 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/preview_placeholder" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_test_record"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/monitor_test_record"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btn_simulate_motion" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_simulate_motion"
@@ -85,6 +91,6 @@
         android:textSize="13sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btn_simulate_motion" />
+        app:layout_constraintTop_toBottomOf="@id/btn_test_record" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 import vn.edu.usth.camerasystem.alert.AlertManager;
 import vn.edu.usth.camerasystem.alert.stub.PrefsAlertManager;
 import vn.edu.usth.camerasystem.camera.RecordingController;
-import vn.edu.usth.camerasystem.camera.stub.NoOpRecordingController;
+import vn.edu.usth.camerasystem.camera.CameraXRecordingController;
 import vn.edu.usth.camerasystem.motion.MotionListener;
 import vn.edu.usth.camerasystem.storage.EventRepository;
 import vn.edu.usth.camerasystem.storage.SecurityEvent;
@@ -35,7 +35,7 @@ public final class AppController implements MotionListener {
 
     private final AlertManager alertManager;
     private final EventRepository eventRepository;
-    private final RecordingController recordingController;
+    private final CameraXRecordingController recordingController;
 
     private long lastMotionHandledAt;
 
@@ -43,7 +43,8 @@ public final class AppController implements MotionListener {
         Context app = context.getApplicationContext();
         alertManager = new PrefsAlertManager(app);
         eventRepository = new InMemoryEventRepository();
-        recordingController = new NoOpRecordingController();
+        recordingController = new CameraXRecordingController(app,
+                androidx.core.content.ContextCompat.getMainExecutor(app));
     }
 
     public static synchronized void init(@NonNull Context context) {
@@ -75,6 +76,12 @@ public final class AppController implements MotionListener {
         return recordingController;
     }
 
+    /** P2 dùng để gắn VideoCapture sau khi bind camera. */
+    @NonNull
+    public CameraXRecordingController getCameraXRecordingController() {
+        return recordingController;
+    }
+
     /**
      * P4 gọi qua listener này khi detect motion.
      */
@@ -103,7 +110,7 @@ public final class AppController implements MotionListener {
 
         alertManager.showMotionAlert(
                 "Phát hiện chuyển động",
-                "Đang ghi clip… (score " + String.format("%.2f", score) + ")"
+                "Đang ghi clip (điểm " + String.format("%.2f", score) + ")"
         );
 
         // Stub: tự stop sau vài giây. P3 có thể thay bằng timer/CameraX callback thật.
@@ -116,7 +123,7 @@ public final class AppController implements MotionListener {
                                 System.currentTimeMillis(),
                                 filePath,
                                 null,
-                                "Motion score " + score
+                                "Điểm chuyển động: " + score
                         );
                         eventRepository.addEvent(event);
                         alertManager.showMotionAlert(
@@ -128,16 +135,7 @@ public final class AppController implements MotionListener {
 
                     @Override
                     public void onRecordingFailed(@NonNull String reason) {
-                        // Stub chưa có file — vẫn tạo event placeholder để P5 test UI.
-                        SecurityEvent event = new SecurityEvent(
-                                UUID.randomUUID().toString(),
-                                System.currentTimeMillis(),
-                                null,
-                                null,
-                                "Stub event — " + reason
-                        );
-                        eventRepository.addEvent(event);
-                        Log.w(TAG, "recording failed: " + reason + " (placeholder event added)");
+                        Log.w(TAG, "Ghi video thất bại: " + reason);
                     }
                 }), RECORD_DURATION_MS);
     }

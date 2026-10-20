@@ -31,17 +31,27 @@ android {
     }
 }
 
-dependencies {
 
+dependencies {
+    // Thu vien Android cua nhom
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.constraintlayout)
     implementation(libs.fragment)
     implementation(libs.activity)
+
+    // CameraX cua nhom
     implementation(libs.camerax.camera2)
     implementation(libs.camerax.lifecycle)
     implementation(libs.camerax.video)
     implementation(libs.camerax.view)
+
+    // P5 - Events + Storage
+    implementation(libs.recyclerview)
+    implementation(libs.room.runtime)
+    annotationProcessor(libs.room.compiler)
+
+    // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

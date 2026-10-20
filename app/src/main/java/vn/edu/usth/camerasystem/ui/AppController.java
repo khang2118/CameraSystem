@@ -15,7 +15,7 @@ import vn.edu.usth.camerasystem.camera.CameraXRecordingController;
 import vn.edu.usth.camerasystem.motion.MotionListener;
 import vn.edu.usth.camerasystem.storage.EventRepository;
 import vn.edu.usth.camerasystem.storage.SecurityEvent;
-import vn.edu.usth.camerasystem.storage.stub.InMemoryEventRepository;
+import vn.edu.usth.camerasystem.storage.RoomEventRepository;
 
 /**
  * Điều phối module chung (P1).
@@ -42,7 +42,7 @@ public final class AppController implements MotionListener {
     private AppController(@NonNull Context context) {
         Context app = context.getApplicationContext();
         alertManager = new PrefsAlertManager(app);
-        eventRepository = new InMemoryEventRepository();
+        eventRepository = new RoomEventRepository(app);
         recordingController = new CameraXRecordingController(app,
                 androidx.core.content.ContextCompat.getMainExecutor(app));
     }

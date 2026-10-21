@@ -1,7 +1,10 @@
 package vn.edu.usth.camerasystem.ui.settings;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,8 +14,11 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.button.MaterialButton;
@@ -33,6 +39,16 @@ public class SettingsFragment extends Fragment {
     private TextView pinStatus;
     private EditText etPin;
 
+    private final ActivityResultLauncher<String> notificationPermissionLauncher =
+            registerForActivityResult(
+                    new ActivityResultContracts.RequestPermission(), granted -> {
+                        if (!granted && isAdded()) {
+                            Toast.makeText(requireContext(),
+                                    R.string.notification_permission_required,
+                                    Toast.LENGTH_LONG).show();
+                        }
+                    });
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -48,8 +64,12 @@ public class SettingsFragment extends Fragment {
 
         SwitchMaterial switchArmed = view.findViewById(R.id.switch_armed);
         switchArmed.setChecked(alertManager.isArmed());
-        switchArmed.setOnCheckedChangeListener((buttonView, isChecked) ->
-                alertManager.setArmed(isChecked));
+        switchArmed.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            alertManager.setArmed(isChecked);
+            if (isChecked) {
+                requestNotificationPermissionIfNeeded();
+            }
+        });
 
         SeekBar seekSensitivity = view.findViewById(R.id.seek_sensitivity);
         sensitivityLabel = view.findViewById(R.id.sensitivity_label);
@@ -121,6 +141,14 @@ public class SettingsFragment extends Fragment {
             pinStatus.setText(getString(R.string.pin_status_set, saved.length()));
         } else {
             pinStatus.setText(R.string.pin_status_not_set);
+        }
+    }
+
+    private void requestNotificationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                && ContextCompat.checkSelfPermission(requireContext(),
+                Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
         }
     }
 

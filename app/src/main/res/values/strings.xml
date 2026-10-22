@@ -31,6 +31,11 @@
     <string name="pin_error_digits">Mã PIN chỉ được chứa chữ số</string>
     <string name="pin_status_set">PIN đã đặt (%1$d chữ số)</string>
     <string name="pin_status_not_set">Chưa đặt mã PIN</string>
+    <string name="pin_gate_title">Mở khóa CameraSystem</string>
+    <string name="pin_gate_description">Nhập mã PIN để tiếp tục</string>
+    <string name="pin_gate_hint">Mã PIN</string>
+    <string name="pin_gate_submit">Mở khóa</string>
+    <string name="pin_gate_error">PIN không đúng. Hãy thử lại.</string>
 
     <string name="notification_channel_name">Cảnh báo chuyển động</string>
     <string name="notification_channel_desc">Thông báo khi phát hiện chuyển động trong chế độ Armed</string>

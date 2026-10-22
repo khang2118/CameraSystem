@@ -74,6 +74,16 @@
             app:layout_constraintTop_toBottomOf="@id/camera_status" />
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_camera_settings"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/camera_open_settings"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btn_camera_permission" />
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_switch_camera"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="0dp"
@@ -82,7 +92,30 @@
             android:text="@string/camera_switch"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/btn_camera_permission" />
+            app:layout_constraintTop_toBottomOf="@id/btn_camera_settings" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_camera_torch"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="4dp"
+            android:enabled="false"
+            android:text="@string/camera_torch_on"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/btn_test_record"
+            app:layout_constraintTop_toBottomOf="@id/btn_switch_camera" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_test_record"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:enabled="false"
+            android:text="@string/monitor_test_record"
+            app:layout_constraintStart_toEndOf="@id/btn_camera_torch"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btn_switch_camera" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_toggle_arm"
@@ -93,7 +126,7 @@
             android:text="@string/monitor_toggle_arm"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/btn_switch_camera" />
+            app:layout_constraintTop_toBottomOf="@id/btn_camera_torch" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_simulate_motion"

@@ -349,31 +349,6 @@ Mỗi người tự test phần mình + chạy full checklist; P1 tổng hợp b
 - SharedPreferences cho Settings / PIN
 - NotificationChannel cho cảnh báo
 
-### P3 — ghi video
-
-- Video được ghi bằng CameraX `VideoCapture`, không thu âm thanh.
-- Thư mục lưu: `getExternalFilesDir("Videos")/` (thư mục riêng của ứng dụng; không cần quyền lưu trữ chung).
-- Tên file: `event_yyyyMMdd_HHmmss.mp4`; mỗi file có JSON cùng tên chứa thời điểm bắt đầu/kết thúc, thời lượng và kích thước.
-- Khi P2 bind CameraX, gắn use case đã tạo vào controller:
-
-```java
-AppController.get().getCameraXRecordingController().ganBoGhi(videoCapture);
-```
-
-- P4 gọi `onMotionDetected`; P1 tự dừng sau 8 giây và chỉ thêm event khi video cùng metadata đã lưu thành công.
-- Không ghi chồng: yêu cầu mới trong lúc đang ghi bị bỏ qua. Nếu camera chưa sẵn sàng hoặc ghi lỗi, không tạo event rỗng.
-- Notebook kiểm tra quy tắc tên file và metadata bằng video mẫu: `colab/kiem_thu_ghi_video.ipynb`. Ghi camera thật vẫn cần chạy app trên điện thoại Android đã cấp quyền camera.
-
-### Chạy thử ghi video trong Android Studio
-
-1. Mở thư mục dự án bằng Android Studio, chờ Gradle Sync hoàn tất.
-2. Chọn điện thoại Android hoặc emulator có camera (Device Manager → Edit → Camera: chọn webcam hoặc Virtual Scene), rồi bấm **Run**.
-3. Cho phép quyền camera khi ứng dụng hỏi.
-4. Ở màn Giám sát, bấm **Ghi thử 5 giây**. Bấm **Dừng ghi** để kết thúc sớm.
-5. Ứng dụng hiện đường dẫn file. Mở **View → Tool Windows → Device Explorer** và vào `sdcard/Android/data/vn.edu.usth.camerasystem/files/Videos/`; kiểm tra cặp `.mp4` và `.json`.
-
-Nút ghi thử này dùng chung `CameraXRecordingController` với ghi tự động khi có chuyển động; không cần bật Armed để kiểm tra ghi thủ công.
-
 ---
 
 ## Build & chạy

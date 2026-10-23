@@ -1,43 +1,45 @@
 package vn.edu.usth.camerasystem.ui;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import vn.edu.usth.camerasystem.alert.AlertManager;
 import vn.edu.usth.camerasystem.alert.stub.PrefsAlertManager;
-import vn.edu.usth.camerasystem.camera.RecordingController;
+import vn.edu.usth.camerasystem.camera.CameraController;
 import vn.edu.usth.camerasystem.camera.CameraXRecordingController;
+import vn.edu.usth.camerasystem.camera.RecordingController;
 import vn.edu.usth.camerasystem.motion.MotionListener;
 import vn.edu.usth.camerasystem.storage.EventRepository;
 import vn.edu.usth.camerasystem.storage.SecurityEvent;
 import vn.edu.usth.camerasystem.storage.stub.InMemoryEventRepository;
 
-/**
- * Điều phối module chung (P1).
- * <p>
- * Pipeline mục tiêu Day 7:<br>
- * Armed + motion → record → save event → notify
- * <p>
- * P2–P6 thay stub bằng implement thật; giữ nguyên các getter này.
- */
 public final class AppController implements MotionListener {
 
     private static final String TAG = "AppController";
     private static final long RECORD_DURATION_MS = TimeUnit.SECONDS.toMillis(8);
     private static final long MOTION_COOLDOWN_MS = TimeUnit.SECONDS.toMillis(10);
-
     private static AppController instance;
 
     private final AlertManager alertManager;
     private final EventRepository eventRepository;
     private final CameraXRecordingController recordingController;
-
+    private final CameraController cameraController;
+    private final Handler handler = new Handler(Looper.getMainLooper());
+    private final Runnable autoStop = () -> stopRecording(null);
+    private final List<RecordingController.Callback> stopCallbacks = new ArrayList<>();
     private long lastMotionHandledAt;
+    private Float motionScore;
+    private boolean stoppingRecording;
 
     private AppController(@NonNull Context context) {
         Context app = context.getApplicationContext();
@@ -45,12 +47,11 @@ public final class AppController implements MotionListener {
         eventRepository = new InMemoryEventRepository();
         recordingController = new CameraXRecordingController(app,
                 androidx.core.content.ContextCompat.getMainExecutor(app));
+        cameraController = new CameraController(app, this);
     }
 
     public static synchronized void init(@NonNull Context context) {
-        if (instance == null) {
-            instance = new AppController(context);
-        }
+        if (instance == null) instance = new AppController(context);
     }
 
     @NonNull
@@ -76,67 +77,77 @@ public final class AppController implements MotionListener {
         return recordingController;
     }
 
-    /** P2 dùng để gắn VideoCapture sau khi bind camera. */
     @NonNull
     public CameraXRecordingController getCameraXRecordingController() {
         return recordingController;
     }
 
-    /**
-     * P4 gọi qua listener này khi detect motion.
-     */
+    @NonNull
+    public CameraController getCameraController() {
+        return cameraController;
+    }
+
+    public boolean startRecording() {
+        if (recordingController.isRecording() || stoppingRecording) return false;
+        handler.removeCallbacks(autoStop);
+        motionScore = null;
+        return recordingController.startRecording();
+    }
+
+    public void stopRecording(@Nullable RecordingController.Callback callback) {
+        handler.removeCallbacks(autoStop);
+        if (callback != null) stopCallbacks.add(callback);
+        if (stoppingRecording) return;
+        if (!recordingController.isRecording()) {
+            finishRecording(null, "Hiện không có video đang ghi");
+            return;
+        }
+        stoppingRecording = true;
+        try {
+            recordingController.stopRecording(new RecordingController.Callback() {
+                @Override
+                public void onRecordingSaved(@NonNull String filePath) {
+                    finishRecording(filePath, null);
+                }
+
+                @Override
+                public void onRecordingFailed(@NonNull String reason) {
+                    finishRecording(null, reason);
+                }
+            });
+        } catch (RuntimeException error) {
+            Log.e(TAG, "Không dừng được video", error);
+            finishRecording(null, "Không dừng được video");
+        }
+    }
+
+    private void finishRecording(@Nullable String filePath, @Nullable String reason) {
+        Float savedScore = motionScore;
+        motionScore = null;
+        stoppingRecording = false;
+        if (filePath != null && savedScore != null) {
+            eventRepository.addEvent(new SecurityEvent(UUID.randomUUID().toString(),
+                    System.currentTimeMillis(), filePath, null,
+                    "Điểm chuyển động: " + savedScore));
+            alertManager.showMotionAlert("Phát hiện chuyển động", "Đã lưu clip");
+        }
+        List<RecordingController.Callback> callbacks = new ArrayList<>(stopCallbacks);
+        stopCallbacks.clear();
+        for (RecordingController.Callback callback : callbacks) {
+            if (filePath != null) callback.onRecordingSaved(filePath);
+            else callback.onRecordingFailed(reason == null ? "Không lưu được video" : reason);
+        }
+        if (reason != null) Log.w(TAG, reason);
+    }
+
     @Override
     public void onMotionDetected(float score, long timestampMs) {
-        if (!alertManager.isArmed()) {
-            Log.d(TAG, "motion ignored — disarmed score=" + score);
-            return;
-        }
-        if (recordingController.isRecording()) {
-            Log.d(TAG, "motion ignored — already recording");
-            return;
-        }
-        if (timestampMs - lastMotionHandledAt < MOTION_COOLDOWN_MS) {
-            Log.d(TAG, "motion ignored — cooldown");
-            return;
-        }
-
+        if (!alertManager.isArmed() || recordingController.isRecording()
+                || timestampMs - lastMotionHandledAt < MOTION_COOLDOWN_MS) return;
+        if (!startRecording()) return;
+        motionScore = score;
         lastMotionHandledAt = timestampMs;
+        handler.postDelayed(autoStop, RECORD_DURATION_MS);
         Log.i(TAG, "motion accepted score=" + score);
-
-        boolean started = recordingController.startRecording();
-        if (!started) {
-            return;
-        }
-
-        alertManager.showMotionAlert(
-                "Phát hiện chuyển động",
-                "Đang ghi clip (điểm " + String.format("%.2f", score) + ")"
-        );
-
-        // Stub: tự stop sau vài giây. P3 có thể thay bằng timer/CameraX callback thật.
-        new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() ->
-                recordingController.stopRecording(new RecordingController.Callback() {
-                    @Override
-                    public void onRecordingSaved(@NonNull String filePath) {
-                        SecurityEvent event = new SecurityEvent(
-                                UUID.randomUUID().toString(),
-                                System.currentTimeMillis(),
-                                filePath,
-                                null,
-                                "Điểm chuyển động: " + score
-                        );
-                        eventRepository.addEvent(event);
-                        alertManager.showMotionAlert(
-                                "Phát hiện chuyển động",
-                                "Đã lưu clip"
-                        );
-                        Log.i(TAG, "event saved path=" + filePath);
-                    }
-
-                    @Override
-                    public void onRecordingFailed(@NonNull String reason) {
-                        Log.w(TAG, "Ghi video thất bại: " + reason);
-                    }
-                }), RECORD_DURATION_MS);
     }
 }

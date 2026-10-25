@@ -18,6 +18,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.camera.core.CameraSelector;
+import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.video.Recorder;
@@ -29,6 +30,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 
 import vn.edu.usth.camerasystem.R;
 import vn.edu.usth.camerasystem.alert.AlertManager;
+import vn.edu.usth.camerasystem.motion.MotionAnalyzer;
 import vn.edu.usth.camerasystem.ui.AppController;
 
 /** Màn hình theo dõi, trạng thái Armed và nút thử cảnh báo. */
@@ -159,9 +161,15 @@ public class MonitorFragment extends Fragment {
                 preview.setSurfaceProvider(xemTruoc.getSurfaceProvider());
                 Recorder recorder = new Recorder.Builder().build();
                 VideoCapture<Recorder> videoCapture = VideoCapture.withOutput(recorder);
+                ImageAnalysis phanTich = new ImageAnalysis.Builder()
+                        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                        .build();
+                phanTich.setAnalyzer(ContextCompat.getMainExecutor(requireContext()),
+                        new MotionAnalyzer(AppController.get(), alertManager,
+                                AppController.get().getRecordingController()));
                 nhaCungCapCamera.unbindAll();
                 nhaCungCapCamera.bindToLifecycle(this, CameraSelector.DEFAULT_BACK_CAMERA,
-                        preview, videoCapture);
+                        preview, videoCapture, phanTich);
                 AppController.get().getCameraXRecordingController().ganBoGhi(videoCapture);
             } catch (Exception loi) {
                 thongBao(getString(R.string.camera_start_failed, loi.getMessage()));

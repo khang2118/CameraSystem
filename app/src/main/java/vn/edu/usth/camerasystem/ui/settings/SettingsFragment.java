@@ -37,6 +37,7 @@ public class SettingsFragment extends Fragment {
     private AlertManager alertManager;
     private TextView sensitivityLabel;
     private TextView pinStatus;
+    private EditText etCurrentPin;
     private EditText etPin;
 
     private final ActivityResultLauncher<String> notificationPermissionLauncher =
@@ -95,6 +96,7 @@ public class SettingsFragment extends Fragment {
             }
         });
 
+        etCurrentPin = view.findViewById(R.id.et_current_pin);
         etPin = view.findViewById(R.id.et_pin);
         pinStatus = view.findViewById(R.id.tv_pin_status);
         MaterialButton btnSavePin = view.findViewById(R.id.btn_save_pin);
@@ -110,12 +112,22 @@ public class SettingsFragment extends Fragment {
 
     private void savePin() {
         String pin = etPin.getText().toString().trim();
+        String savedPin = getPrefs().getString(KEY_PIN, null);
+        boolean hasPin = savedPin != null && !savedPin.isEmpty();
+
+        if (hasPin && !savedPin.equals(etCurrentPin.getText().toString().trim())) {
+            etCurrentPin.setError(getString(R.string.pin_error_current));
+            etCurrentPin.requestFocus();
+            return;
+        }
 
         if (pin.isEmpty()) {
-            getPrefs().edit().remove(KEY_PIN).apply();
-            Toast.makeText(requireContext(), R.string.pin_removed, Toast.LENGTH_SHORT).show();
-            etPin.setText("");
-            refreshPinStatus();
+            if (hasPin) {
+                getPrefs().edit().remove(KEY_PIN).apply();
+                Toast.makeText(requireContext(), R.string.pin_removed, Toast.LENGTH_SHORT).show();
+                clearPinInputs();
+                refreshPinStatus();
+            }
             return;
         }
 
@@ -131,17 +143,25 @@ public class SettingsFragment extends Fragment {
 
         getPrefs().edit().putString(KEY_PIN, pin).apply();
         Toast.makeText(requireContext(), R.string.pin_saved, Toast.LENGTH_SHORT).show();
-        etPin.setText("");
+        clearPinInputs();
         refreshPinStatus();
     }
 
     private void refreshPinStatus() {
         String saved = getPrefs().getString(KEY_PIN, null);
         if (saved != null && !saved.isEmpty()) {
+            etCurrentPin.setVisibility(View.VISIBLE);
             pinStatus.setText(getString(R.string.pin_status_set, saved.length()));
         } else {
+            etCurrentPin.setVisibility(View.GONE);
             pinStatus.setText(R.string.pin_status_not_set);
         }
+    }
+
+    private void clearPinInputs() {
+        etCurrentPin.setText("");
+        etCurrentPin.setError(null);
+        etPin.setText("");
     }
 
     private void requestNotificationPermissionIfNeeded() {

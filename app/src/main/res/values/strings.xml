@@ -23,12 +23,31 @@
     <string name="recording_failed">Ghi video thất bại: %1$s</string>
 
     <string name="events_title">Events</string>
-    <string name="events_placeholder">Danh sách sự kiện sẽ hiện ở đây (P5)</string>
+    <string name="events_placeholder">Sự kiện sẽ hiển thị tại đây.</string>
     <string name="events_empty">Chưa có sự kiện</string>
 
     <string name="settings_title">Settings</string>
-    <string name="settings_placeholder">PIN sẽ do P6 bổ sung. Armed &amp; độ nhạy đã nối AlertManager.</string>
     <string name="settings_armed_label">Armed (giám sát)</string>
     <string name="settings_sensitivity_label">Độ nhạy motion: %1$d</string>
-</resources>
 
+    <string name="settings_pin_title">Mã PIN</string>
+    <string name="settings_current_pin_hint">Nhập PIN hiện tại</string>
+    <string name="settings_pin_hint">Nhập mã PIN (4–6 số)</string>
+    <string name="settings_save_pin">Lưu PIN</string>
+    <string name="pin_saved">Đã lưu mã PIN</string>
+    <string name="pin_removed">Đã xóa mã PIN</string>
+    <string name="pin_error_length">Mã PIN phải từ 4 đến 6 chữ số</string>
+    <string name="pin_error_digits">Mã PIN chỉ được chứa chữ số</string>
+    <string name="pin_error_current">PIN hiện tại không đúng</string>
+    <string name="pin_status_set">PIN đã đặt (%1$d chữ số)</string>
+    <string name="pin_status_not_set">Chưa đặt mã PIN</string>
+    <string name="pin_gate_title">Mở khóa CameraSystem</string>
+    <string name="pin_gate_description">Nhập mã PIN để tiếp tục</string>
+    <string name="pin_gate_hint">Mã PIN</string>
+    <string name="pin_gate_submit">Mở khóa</string>
+    <string name="pin_gate_error">PIN không đúng. Hãy thử lại.</string>
+
+    <string name="notification_channel_name">Cảnh báo chuyển động</string>
+    <string name="notification_channel_desc">Thông báo khi phát hiện chuyển động trong chế độ Armed</string>
+    <string name="notification_permission_required">Cần quyền thông báo để nhận cảnh báo chuyển động.</string>
+</resources>

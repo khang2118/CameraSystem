@@ -108,11 +108,6 @@ public final class AppController implements MotionListener {
             return;
         }
 
-        alertManager.showMotionAlert(
-                "Phát hiện chuyển động",
-                "Đang ghi clip (điểm " + String.format("%.2f", score) + ")"
-        );
-
         // Stub: tự stop sau vài giây. P3 có thể thay bằng timer/CameraX callback thật.
         new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() ->
                 recordingController.stopRecording(new RecordingController.Callback() {

@@ -7,11 +7,9 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import vn.edu.usth.camerasystem.alert.AlertManager;
+import vn.edu.usth.camerasystem.alert.NotificationHelper;
 
-/**
- * Stub Day 3 — Armed/sensitivity qua SharedPreferences; alert chỉ Log.
- * P6 thay {@link #showMotionAlert} bằng Notification thật.
- */
+/** Lưu trạng thái giám sát và độ nhạy, đồng thời gửi cảnh báo hệ thống. */
 public class PrefsAlertManager implements AlertManager {
 
     private static final String TAG = "AlertManager";
@@ -20,11 +18,12 @@ public class PrefsAlertManager implements AlertManager {
     private static final String KEY_SENSITIVITY = "sensitivity";
     private static final int DEFAULT_SENSITIVITY = 50;
 
+    private final Context appContext;
     private final SharedPreferences prefs;
 
     public PrefsAlertManager(@NonNull Context context) {
-        prefs = context.getApplicationContext()
-                .getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+        appContext = context.getApplicationContext();
+        prefs = appContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
     }
 
     @Override
@@ -57,5 +56,7 @@ public class PrefsAlertManager implements AlertManager {
             return;
         }
         Log.i(TAG, "ALERT: " + title + " — " + body);
+
+        NotificationHelper.show(appContext, title, body);
     }
 }

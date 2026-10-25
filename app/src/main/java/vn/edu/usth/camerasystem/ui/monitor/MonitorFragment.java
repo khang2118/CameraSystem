@@ -1,5 +1,8 @@
 package vn.edu.usth.camerasystem.ui.monitor;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -9,10 +12,10 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageAnalysis;
@@ -30,10 +33,7 @@ import vn.edu.usth.camerasystem.alert.AlertManager;
 import vn.edu.usth.camerasystem.motion.MotionAnalyzer;
 import vn.edu.usth.camerasystem.ui.AppController;
 
-/**
- * Monitor tab — live preview shell. CameraX sẽ do P2 gắn vào.
- * Nút giả lập motion dùng để test interface Day 3 (trước khi có P4).
- */
+/** Màn hình theo dõi, trạng thái Armed và nút thử cảnh báo. */
 public class MonitorFragment extends Fragment {
 
     private TextView statusChip;
@@ -48,6 +48,17 @@ public class MonitorFragment extends Fragment {
                 if (duocCap) batCamera();
                 else thongBao(getString(R.string.camera_permission_denied));
             });
+
+    private final ActivityResultLauncher<String> notifPermLauncher =
+            registerForActivityResult(
+                    new ActivityResultContracts.RequestPermission(),
+                    granted -> {
+                        if (!granted) {
+                            Toast.makeText(requireContext(),
+                                    R.string.notification_permission_required,
+                                    Toast.LENGTH_LONG).show();
+                        }
+                    });
 
     @Nullable
     @Override
@@ -77,6 +88,10 @@ public class MonitorFragment extends Fragment {
                     next ? R.string.monitor_status_armed : R.string.monitor_status_disarmed,
                     Toast.LENGTH_SHORT
             ).show();
+
+            if (next) {
+                requestNotificationPermissionIfNeeded();
+            }
         });
 
         btnSimulate.setOnClickListener(v -> {
@@ -191,5 +206,13 @@ public class MonitorFragment extends Fragment {
         statusChip.setBackgroundResource(
                 armed ? R.drawable.bg_status_chip_armed : R.drawable.bg_status_chip
         );
+    }
+
+    private void requestNotificationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                && ContextCompat.checkSelfPermission(requireContext(),
+                Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            notifPermLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+        }
     }
 }

@@ -1,29 +1,54 @@
 package vn.edu.usth.camerasystem.ui.settings;
 
+import android.Manifest;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
 import vn.edu.usth.camerasystem.R;
 import vn.edu.usth.camerasystem.alert.AlertManager;
 import vn.edu.usth.camerasystem.ui.AppController;
 
-/**
- * Settings tab — nối AlertManager (Armed + sensitivity). PIN do P6 bổ sung.
- */
+/** Màn hình cài đặt chế độ giám sát, độ nhạy và mã PIN. */
 public class SettingsFragment extends Fragment {
+
+    private static final String PREFS = "camera_security_prefs";
+    private static final String KEY_PIN = "pin";
 
     private AlertManager alertManager;
     private TextView sensitivityLabel;
+    private TextView pinStatus;
+    private EditText etCurrentPin;
+    private EditText etPin;
+
+    private final ActivityResultLauncher<String> notificationPermissionLauncher =
+            registerForActivityResult(
+                    new ActivityResultContracts.RequestPermission(), granted -> {
+                        if (!granted && isAdded()) {
+                            Toast.makeText(requireContext(),
+                                    R.string.notification_permission_required,
+                                    Toast.LENGTH_LONG).show();
+                        }
+                    });
 
     @Nullable
     @Override
@@ -39,12 +64,16 @@ public class SettingsFragment extends Fragment {
         alertManager = AppController.get().getAlertManager();
 
         SwitchMaterial switchArmed = view.findViewById(R.id.switch_armed);
+        switchArmed.setChecked(alertManager.isArmed());
+        switchArmed.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            alertManager.setArmed(isChecked);
+            if (isChecked) {
+                requestNotificationPermissionIfNeeded();
+            }
+        });
+
         SeekBar seekSensitivity = view.findViewById(R.id.seek_sensitivity);
         sensitivityLabel = view.findViewById(R.id.sensitivity_label);
-
-        switchArmed.setChecked(alertManager.isArmed());
-        switchArmed.setOnCheckedChangeListener((buttonView, isChecked) ->
-                alertManager.setArmed(isChecked));
 
         int sensitivity = alertManager.getSensitivity();
         seekSensitivity.setProgress(sensitivity);
@@ -66,6 +95,81 @@ public class SettingsFragment extends Fragment {
             public void onStopTrackingTouch(SeekBar seekBar) {
             }
         });
+
+        etCurrentPin = view.findViewById(R.id.et_current_pin);
+        etPin = view.findViewById(R.id.et_pin);
+        pinStatus = view.findViewById(R.id.tv_pin_status);
+        MaterialButton btnSavePin = view.findViewById(R.id.btn_save_pin);
+
+        refreshPinStatus();
+
+        btnSavePin.setOnClickListener(v -> savePin());
+    }
+
+    private SharedPreferences getPrefs() {
+        return requireContext().getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+    }
+
+    private void savePin() {
+        String pin = etPin.getText().toString().trim();
+        String savedPin = getPrefs().getString(KEY_PIN, null);
+        boolean hasPin = savedPin != null && !savedPin.isEmpty();
+
+        if (hasPin && !savedPin.equals(etCurrentPin.getText().toString().trim())) {
+            etCurrentPin.setError(getString(R.string.pin_error_current));
+            etCurrentPin.requestFocus();
+            return;
+        }
+
+        if (pin.isEmpty()) {
+            if (hasPin) {
+                getPrefs().edit().remove(KEY_PIN).apply();
+                Toast.makeText(requireContext(), R.string.pin_removed, Toast.LENGTH_SHORT).show();
+                clearPinInputs();
+                refreshPinStatus();
+            }
+            return;
+        }
+
+        if (pin.length() < 4 || pin.length() > 6) {
+            Toast.makeText(requireContext(), R.string.pin_error_length, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (!pin.matches("\\d+")) {
+            Toast.makeText(requireContext(), R.string.pin_error_digits, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        getPrefs().edit().putString(KEY_PIN, pin).apply();
+        Toast.makeText(requireContext(), R.string.pin_saved, Toast.LENGTH_SHORT).show();
+        clearPinInputs();
+        refreshPinStatus();
+    }
+
+    private void refreshPinStatus() {
+        String saved = getPrefs().getString(KEY_PIN, null);
+        if (saved != null && !saved.isEmpty()) {
+            etCurrentPin.setVisibility(View.VISIBLE);
+            pinStatus.setText(getString(R.string.pin_status_set, saved.length()));
+        } else {
+            etCurrentPin.setVisibility(View.GONE);
+            pinStatus.setText(R.string.pin_status_not_set);
+        }
+    }
+
+    private void clearPinInputs() {
+        etCurrentPin.setText("");
+        etCurrentPin.setError(null);
+        etPin.setText("");
+    }
+
+    private void requestNotificationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                && ContextCompat.checkSelfPermission(requireContext(),
+                Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+        }
     }
 
     private void updateSensitivityLabel(int value) {

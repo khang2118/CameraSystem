@@ -101,10 +101,20 @@
                 android:textStyle="bold" />
 
             <EditText
-                android:id="@+id/et_pin"
+                android:id="@+id/et_current_pin"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
+                android:hint="@string/settings_current_pin_hint"
+                android:inputType="numberPassword"
+                android:maxLength="6"
+                android:visibility="gone" />
+
+            <EditText
+                android:id="@+id/et_pin"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
                 android:hint="@string/settings_pin_hint"
                 android:inputType="numberPassword"
                 android:maxLength="6" />

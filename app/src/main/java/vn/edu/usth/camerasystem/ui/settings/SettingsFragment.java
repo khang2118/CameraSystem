@@ -20,13 +20,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
 import vn.edu.usth.camerasystem.R;
-import vn.edu.usth.camerasystem.alert.AlertManager;
-import vn.edu.usth.camerasystem.ui.AppController;
+import vn.edu.usth.camerasystem.ui.SecurityViewModel;
 
 /** Màn hình cài đặt chế độ giám sát, độ nhạy và mã PIN. */
 public class SettingsFragment extends Fragment {
@@ -34,7 +34,7 @@ public class SettingsFragment extends Fragment {
     private static final String PREFS = "camera_security_prefs";
     private static final String KEY_PIN = "pin";
 
-    private AlertManager alertManager;
+    private SecurityViewModel securityViewModel;
     private TextView sensitivityLabel;
     private TextView pinStatus;
     private EditText etCurrentPin;
@@ -61,12 +61,11 @@ public class SettingsFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        alertManager = AppController.get().getAlertManager();
+        securityViewModel = new ViewModelProvider(requireActivity()).get(SecurityViewModel.class);
 
         SwitchMaterial switchArmed = view.findViewById(R.id.switch_armed);
-        switchArmed.setChecked(alertManager.isArmed());
         switchArmed.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            alertManager.setArmed(isChecked);
+            securityViewModel.setArmed(isChecked);
             if (isChecked) {
                 requestNotificationPermissionIfNeeded();
             }
@@ -75,15 +74,12 @@ public class SettingsFragment extends Fragment {
         SeekBar seekSensitivity = view.findViewById(R.id.seek_sensitivity);
         sensitivityLabel = view.findViewById(R.id.sensitivity_label);
 
-        int sensitivity = alertManager.getSensitivity();
-        seekSensitivity.setProgress(sensitivity);
-        updateSensitivityLabel(sensitivity);
         seekSensitivity.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 updateSensitivityLabel(progress);
                 if (fromUser) {
-                    alertManager.setSensitivity(progress);
+                    securityViewModel.setSensitivity(progress);
                 }
             }
 
@@ -104,6 +100,20 @@ public class SettingsFragment extends Fragment {
         refreshPinStatus();
 
         btnSavePin.setOnClickListener(v -> savePin());
+
+        securityViewModel.getArmed().observe(getViewLifecycleOwner(), armed -> {
+            boolean value = Boolean.TRUE.equals(armed);
+            if (switchArmed.isChecked() != value) {
+                switchArmed.setChecked(value);
+            }
+        });
+        securityViewModel.getSensitivity().observe(getViewLifecycleOwner(), value -> {
+            if (value == null) return;
+            if (seekSensitivity.getProgress() != value) {
+                seekSensitivity.setProgress(value);
+            }
+            updateSensitivityLabel(value);
+        });
     }
 
     private SharedPreferences getPrefs() {

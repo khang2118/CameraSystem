@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import vn.edu.usth.camerasystem.alert.AlertManager;
 import vn.edu.usth.camerasystem.alert.NotificationHelper;
@@ -20,6 +21,8 @@ public class PrefsAlertManager implements AlertManager {
 
     private final Context appContext;
     private final SharedPreferences prefs;
+    @Nullable
+    private ChangeListener changeListener;
 
     public PrefsAlertManager(@NonNull Context context) {
         appContext = context.getApplicationContext();
@@ -35,6 +38,9 @@ public class PrefsAlertManager implements AlertManager {
     public void setArmed(boolean armed) {
         prefs.edit().putBoolean(KEY_ARMED, armed).apply();
         Log.d(TAG, "armed=" + armed);
+        if (changeListener != null) {
+            changeListener.onArmedChanged(armed);
+        }
     }
 
     @Override
@@ -47,6 +53,14 @@ public class PrefsAlertManager implements AlertManager {
         int clamped = Math.max(0, Math.min(100, sensitivity));
         prefs.edit().putInt(KEY_SENSITIVITY, clamped).apply();
         Log.d(TAG, "sensitivity=" + clamped);
+        if (changeListener != null) {
+            changeListener.onSensitivityChanged(clamped);
+        }
+    }
+
+    @Override
+    public void setChangeListener(@Nullable ChangeListener listener) {
+        changeListener = listener;
     }
 
     @Override

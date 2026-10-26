@@ -1,3 +1,4 @@
+
 plugins {
     alias(libs.plugins.android.application)
 }
@@ -25,28 +26,28 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
 }
 
-
 dependencies {
-    // Thu vien Android cua nhom
+    // Existing Android libraries
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.constraintlayout)
     implementation(libs.fragment)
     implementation(libs.activity)
 
-    // CameraX cua nhom
+    // CameraX
     implementation(libs.camerax.camera2)
     implementation(libs.camerax.lifecycle)
     implementation(libs.camerax.video)
     implementation(libs.camerax.view)
 
-    // P5 - Events + Storage
+    // P5 - Events and Storage
     implementation(libs.recyclerview)
     implementation(libs.room.runtime)
     annotationProcessor(libs.room.compiler)

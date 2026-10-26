@@ -17,8 +17,9 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <!-- Trạng thái giám sát và độ nhạy -->
     <com.google.android.material.card.MaterialCardView
-        android:id="@+id/settings_card"
+        android:id="@+id/card_armed"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
@@ -69,12 +70,68 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:max="100" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Cài đặt mã PIN -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_pin"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:cardBackgroundColor="@color/surface"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="2dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/card_armed">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="@string/settings_placeholder"
+                android:text="@string/settings_pin_title"
+                android:textColor="@color/text_primary"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/et_current_pin"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:hint="@string/settings_current_pin_hint"
+                android:inputType="numberPassword"
+                android:maxLength="6"
+                android:visibility="gone" />
+
+            <EditText
+                android:id="@+id/et_pin"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:hint="@string/settings_pin_hint"
+                android:inputType="numberPassword"
+                android:maxLength="6" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_save_pin"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="@string/settings_save_pin" />
+
+            <TextView
+                android:id="@+id/tv_pin_status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/pin_status_not_set"
                 android:textColor="@color/text_secondary"
                 android:textSize="13sp" />
         </LinearLayout>

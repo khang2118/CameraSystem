@@ -18,6 +18,8 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -35,6 +37,9 @@ public class MainActivity extends AppCompatActivity {
     private static final String KEY_SELECTED_NAV = "selected_nav";
     private static final String PREFS = "camera_security_prefs";
     private static final String KEY_PIN = "pin";
+    private static final String TAG_MONITOR = "tab_monitor";
+    private static final String TAG_EVENTS = "tab_events";
+    private static final String TAG_SETTINGS = "tab_settings";
 
     private MaterialToolbar toolbar;
     private BottomNavigationView bottomNav;
@@ -155,21 +160,49 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean switchTo(int itemId) {
-        Fragment fragment;
+        String tag;
         if (itemId == R.id.nav_events) {
-            fragment = new EventsFragment();
+            tag = TAG_EVENTS;
         } else if (itemId == R.id.nav_settings) {
-            fragment = new SettingsFragment();
+            tag = TAG_SETTINGS;
         } else {
-            fragment = new MonitorFragment();
+            tag = TAG_MONITOR;
             itemId = R.id.nav_monitor;
         }
 
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.fragment_container, fragment)
-                .commit();
+        FragmentManager manager = getSupportFragmentManager();
+        FragmentTransaction transaction = manager.beginTransaction();
+        Fragment monitor = manager.findFragmentByTag(TAG_MONITOR);
+        Fragment events = manager.findFragmentByTag(TAG_EVENTS);
+        Fragment settings = manager.findFragmentByTag(TAG_SETTINGS);
 
+        if (TAG_EVENTS.equals(tag)) {
+            if (events == null) {
+                transaction.add(R.id.fragment_container, new EventsFragment(), TAG_EVENTS);
+            } else {
+                transaction.show(events);
+            }
+            if (monitor != null) transaction.hide(monitor);
+            if (settings != null) transaction.hide(settings);
+        } else if (TAG_SETTINGS.equals(tag)) {
+            if (settings == null) {
+                transaction.add(R.id.fragment_container, new SettingsFragment(), TAG_SETTINGS);
+            } else {
+                transaction.show(settings);
+            }
+            if (monitor != null) transaction.hide(monitor);
+            if (events != null) transaction.hide(events);
+        } else {
+            if (monitor == null) {
+                transaction.add(R.id.fragment_container, new MonitorFragment(), TAG_MONITOR);
+            } else {
+                transaction.show(monitor);
+            }
+            if (events != null) transaction.hide(events);
+            if (settings != null) transaction.hide(settings);
+        }
+
+        transaction.commit();
         updateToolbarTitle(itemId);
         return true;
     }

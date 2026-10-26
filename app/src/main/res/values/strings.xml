@@ -11,7 +11,8 @@
     <string name="monitor_status_disarmed">Disarmed</string>
     <string name="monitor_status_armed">Armed</string>
     <string name="monitor_toggle_arm">Bật / tắt Armed</string>
-    <string name="monitor_simulate_motion">Giả lập motion (test Day 3)</string>
+    <string name="monitor_simulate_motion">Giả lập motion</string>
+    <string name="monitor_recording">Đang ghi…</string>
 
     <string name="camera_permission_needed">Cấp quyền camera để xem hình trực tiếp.</string>
     <string name="camera_permission_denied">Chưa có quyền camera. Hãy thử cấp quyền lại hoặc mở cài đặt quyền.</string>
@@ -42,6 +43,21 @@
     <string name="events_title">Events</string>
     <string name="events_placeholder">Sự kiện sẽ hiển thị tại đây.</string>
     <string name="events_empty">Chưa có sự kiện</string>
+    <string name="events_play">Xem video</string>
+    <string name="events_delete">Xóa</string>
+    <string name="events_no_video">Sự kiện không có video</string>
+    <string name="events_file_missing">Không tìm thấy file video</string>
+    <string name="events_play_error">Không phát được video</string>
+    <string name="events_video_title">Video sự kiện</string>
+    <string name="events_close">Đóng</string>
+    <string name="events_delete_title">Xóa sự kiện?</string>
+    <string name="events_delete_message">Xóa sự kiện khỏi lịch sử? Video trong bộ nhớ ứng dụng cũng sẽ bị xóa nếu có.</string>
+    <string name="events_cancel">Hủy</string>
+    <string name="events_deleted">Đã xóa sự kiện</string>
+    <string name="events_not_found">Không tìm thấy sự kiện</string>
+    <string name="events_default_note">Sự kiện chuyển động</string>
+    <string name="events_video_path">Video: %1$s</string>
+    <string name="events_no_attachment">Không có video đính kèm</string>
 
     <string name="settings_title">Settings</string>
     <string name="settings_armed_label">Armed (giám sát)</string>

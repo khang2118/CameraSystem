@@ -1,6 +1,5 @@
 package vn.edu.usth.camerasystem.ui.events;
 
-import android.view.Gravity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.net.Uri;
@@ -9,10 +8,8 @@ import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.MediaController;
-import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
 
@@ -25,6 +22,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.io.File;
 import java.util.List;
 
+import vn.edu.usth.camerasystem.R;
 import vn.edu.usth.camerasystem.storage.EventRepository;
 import vn.edu.usth.camerasystem.storage.SecurityEvent;
 import vn.edu.usth.camerasystem.ui.AppController;
@@ -35,35 +33,28 @@ public final class EventsFragment extends Fragment implements EventRepository.Ob
 
     @Nullable private EventRepository repository;
     @Nullable private RecyclerView recyclerView;
-    @Nullable private TextView emptyView;
+    @Nullable private View emptyView;
     @Nullable private EventAdapter adapter;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container, @Nullable Bundle state) {
-        Context context = requireContext();
-        FrameLayout root = new FrameLayout(context);
+        return inflater.inflate(R.layout.fragment_events, container, false);
+    }
 
-        RecyclerView list = new RecyclerView(context);
-        list.setLayoutManager(new LinearLayoutManager(context));
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        RecyclerView list = view.findViewById(R.id.events_list);
         EventAdapter eventAdapter = new EventAdapter(this);
+        list.setLayoutManager(new LinearLayoutManager(requireContext()));
         list.setAdapter(eventAdapter);
-        root.addView(list, new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-
-        TextView empty = new TextView(context);
-        empty.setText("Chua co su kien camera");
-        empty.setTextSize(17);
-        empty.setGravity(Gravity.CENTER);
-        root.addView(empty, new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
         recyclerView = list;
-        emptyView = empty;
+        emptyView = view.findViewById(R.id.events_empty_state);
         adapter = eventAdapter;
         repository = AppController.get().getEventRepository();
-        return root;
     }
 
     @Override
@@ -113,7 +104,7 @@ public final class EventsFragment extends Fragment implements EventRepository.Ob
         if (!isAdded()) return;
         String path = event.getVideoPath();
         if (path == null || path.trim().isEmpty()) {
-            Toast.makeText(requireContext(), "Su kien khong co video", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.events_no_video, Toast.LENGTH_SHORT).show();
             return;
         }
         Uri uri;
@@ -122,10 +113,10 @@ public final class EventsFragment extends Fragment implements EventRepository.Ob
         } else {
             File file = new File(path);
             if (!file.isFile()) {
-                Toast.makeText(requireContext(), "Khong tim thay file video", Toast.LENGTH_LONG).show();
+                Toast.makeText(requireContext(), R.string.events_file_missing, Toast.LENGTH_LONG).show();
                 return;
             }
-            uri = Uri.fromFile(file); // Only used inside our own VideoView; not shared with another app.
+            uri = Uri.fromFile(file);
         }
         Context context = requireContext();
         VideoView video = new VideoView(context);
@@ -138,14 +129,14 @@ public final class EventsFragment extends Fragment implements EventRepository.Ob
         video.setMediaController(controls);
         video.setVideoURI(uri);
         AlertDialog dialog = new AlertDialog.Builder(context)
-                .setTitle("Video su kien")
+                .setTitle(R.string.events_video_title)
                 .setView(wrapper)
-                .setPositiveButton("Dong", (d, which) -> d.dismiss())
+                .setPositiveButton(R.string.events_close, (d, which) -> d.dismiss())
                 .create();
         dialog.setOnShowListener(d -> video.start());
         dialog.setOnDismissListener(d -> video.stopPlayback());
         video.setOnErrorListener((mp, what, extra) -> {
-            Toast.makeText(context, "Khong phat duoc video", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, R.string.events_play_error, Toast.LENGTH_SHORT).show();
             return true;
         });
         dialog.show();
@@ -155,14 +146,14 @@ public final class EventsFragment extends Fragment implements EventRepository.Ob
     public void onDelete(@NonNull SecurityEvent event) {
         if (!isAdded()) return;
         new AlertDialog.Builder(requireContext())
-                .setTitle("Xoa su kien?")
-                .setMessage("Xoa su kien khoi lich su? Video trong vung luu tru cua ung dung cung se bi xoa neu co.")
-                .setNegativeButton("Huy", null)
-                .setPositiveButton("Xoa", (dialog, which) -> {
+                .setTitle(R.string.events_delete_title)
+                .setMessage(R.string.events_delete_message)
+                .setNegativeButton(R.string.events_cancel, null)
+                .setPositiveButton(R.string.events_delete, (dialog, which) -> {
                     if (repository == null) return;
                     boolean accepted = repository.deleteEvent(event.getId());
                     Toast.makeText(requireContext(), accepted
-                            ? "Da gui yeu cau xoa" : "Khong tim thay su kien", Toast.LENGTH_SHORT).show();
+                            ? R.string.events_deleted : R.string.events_not_found, Toast.LENGTH_SHORT).show();
                 })
                 .show();
     }

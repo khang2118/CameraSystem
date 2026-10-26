@@ -17,15 +17,12 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/events_list_text"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/events_list"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="12dp"
-        android:background="@color/surface"
-        android:padding="16dp"
-        android:textColor="@color/text_primary"
-        android:textSize="14sp"
+        android:clipToPadding="false"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

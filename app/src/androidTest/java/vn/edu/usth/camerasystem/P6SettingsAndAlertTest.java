@@ -6,6 +6,7 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
+import android.os.SystemClock;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -110,13 +111,17 @@ public class P6SettingsAndAlertTest {
         NotificationManager manager = appContext.getSystemService(NotificationManager.class);
         assertNotNull("Notification manager is unavailable", manager);
         boolean found = false;
-        for (android.service.notification.StatusBarNotification posted : manager.getActiveNotifications()) {
-            Notification notification = posted.getNotification();
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O
-                    || NotificationHelper.CHANNEL_ID.equals(notification.getChannelId())) {
-                found = true;
-                break;
+        long deadline = SystemClock.uptimeMillis() + 5000;
+        while (!found && SystemClock.uptimeMillis() < deadline) {
+            for (android.service.notification.StatusBarNotification posted : manager.getActiveNotifications()) {
+                Notification notification = posted.getNotification();
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O
+                        || NotificationHelper.CHANNEL_ID.equals(notification.getChannelId())) {
+                    found = true;
+                    break;
+                }
             }
+            if (!found) SystemClock.sleep(100);
         }
         assertTrue("Motion alert was not posted", found);
     }

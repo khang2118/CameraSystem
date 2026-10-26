@@ -24,19 +24,21 @@ import androidx.camera.core.CameraSelector;
 import androidx.camera.view.PreviewView;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.button.MaterialButton;
 
 import vn.edu.usth.camerasystem.R;
-import vn.edu.usth.camerasystem.alert.AlertManager;
 import vn.edu.usth.camerasystem.camera.CameraController;
 import vn.edu.usth.camerasystem.camera.RecordingController;
 import vn.edu.usth.camerasystem.ui.AppController;
+import vn.edu.usth.camerasystem.ui.SecurityViewModel;
 
 public class MonitorFragment extends Fragment implements CameraController.Listener {
 
     private TextView statusChip;
     private TextView cameraStatus;
+    private TextView recordingOverlay;
     private PreviewView previewView;
     private MaterialButton btnCameraPermission;
     private MaterialButton btnCameraSettings;
@@ -44,8 +46,8 @@ public class MonitorFragment extends Fragment implements CameraController.Listen
     private MaterialButton btnTorch;
     private MaterialButton btnTestRecord;
     private AppController appController;
-    private AlertManager alertManager;
     private CameraController cameraController;
+    private SecurityViewModel securityViewModel;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Runnable stopTestRecording = this::stopRecording;
     private final Runnable updateStatus = new Runnable() {
@@ -80,10 +82,11 @@ public class MonitorFragment extends Fragment implements CameraController.Listen
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         appController = AppController.get();
-        alertManager = appController.getAlertManager();
         cameraController = appController.getCameraController();
+        securityViewModel = new ViewModelProvider(requireActivity()).get(SecurityViewModel.class);
         statusChip = view.findViewById(R.id.status_chip);
         cameraStatus = view.findViewById(R.id.camera_status);
+        recordingOverlay = view.findViewById(R.id.recording_overlay);
         previewView = view.findViewById(R.id.preview_view);
         btnCameraPermission = view.findViewById(R.id.btn_camera_permission);
         btnCameraSettings = view.findViewById(R.id.btn_camera_settings);
@@ -112,19 +115,19 @@ public class MonitorFragment extends Fragment implements CameraController.Listen
             refreshControls();
         });
         view.findViewById(R.id.btn_toggle_arm).setOnClickListener(v -> {
-            alertManager.setArmed(!alertManager.isArmed());
-            refreshControls();
-            if (alertManager.isArmed()) requestNotificationPermissionIfNeeded();
+            boolean next = !Boolean.TRUE.equals(securityViewModel.getArmed().getValue());
+            securityViewModel.setArmed(next);
+            if (next) requestNotificationPermissionIfNeeded();
         });
         view.findViewById(R.id.btn_simulate_motion).setOnClickListener(v -> {
-            if (!alertManager.isArmed()) {
+            if (!Boolean.TRUE.equals(securityViewModel.getArmed().getValue())) {
                 showMessage(getString(R.string.monitor_status_disarmed));
                 return;
             }
-            appController.onMotionDetected(alertManager.getSensitivity() / 100f,
-                    System.currentTimeMillis());
-            refreshControls();
+            securityViewModel.simulateMotion();
         });
+        securityViewModel.getArmed().observe(getViewLifecycleOwner(), armed -> refreshControls());
+        securityViewModel.getRecording().observe(getViewLifecycleOwner(), recording -> refreshControls());
     }
 
     private boolean hasCameraPermission() {
@@ -171,11 +174,15 @@ public class MonitorFragment extends Fragment implements CameraController.Listen
 
     private void refreshControls() {
         if (cameraStatus == null) return;
-        boolean armed = alertManager.isArmed();
+        boolean armed = Boolean.TRUE.equals(securityViewModel.getArmed().getValue());
         statusChip.setText(armed ? R.string.monitor_status_armed : R.string.monitor_status_disarmed);
         statusChip.setBackgroundResource(armed ? R.drawable.bg_status_chip_armed : R.drawable.bg_status_chip);
         boolean ready = cameraController.isReady();
-        boolean recording = appController.getRecordingController().isRecording();
+        boolean recording = Boolean.TRUE.equals(securityViewModel.getRecording().getValue())
+                || appController.getRecordingController().isRecording();
+        if (recordingOverlay != null) {
+            recordingOverlay.setVisibility(recording ? View.VISIBLE : View.GONE);
+        }
         btnSwitchCamera.setEnabled(cameraController.canSwitchCamera());
         btnTorch.setEnabled(cameraController.hasTorch());
         btnTorch.setText(!ready ? R.string.camera_torch_on
@@ -267,6 +274,7 @@ public class MonitorFragment extends Fragment implements CameraController.Listen
         stopCamera();
         statusChip = null;
         cameraStatus = null;
+        recordingOverlay = null;
         previewView = null;
         btnCameraPermission = null;
         btnCameraSettings = null;

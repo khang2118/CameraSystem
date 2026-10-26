@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 
 import vn.edu.usth.camerasystem.alert.AlertManager;
@@ -37,6 +38,7 @@ public final class AppController implements MotionListener {
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Runnable autoStop = () -> stopRecording(null);
     private final List<RecordingController.Callback> stopCallbacks = new ArrayList<>();
+    private final List<StateListener> stateListeners = new CopyOnWriteArrayList<>();
     private long lastMotionHandledAt;
     private Float motionScore;
     private boolean stoppingRecording;
@@ -48,6 +50,17 @@ public final class AppController implements MotionListener {
         recordingController = new CameraXRecordingController(app,
                 androidx.core.content.ContextCompat.getMainExecutor(app));
         cameraController = new CameraController(app, this);
+        alertManager.setChangeListener(new AlertManager.ChangeListener() {
+            @Override
+            public void onArmedChanged(boolean armed) {
+                notifyArmed(armed);
+            }
+
+            @Override
+            public void onSensitivityChanged(int sensitivity) {
+                notifySensitivity(sensitivity);
+            }
+        });
     }
 
     public static synchronized void init(@NonNull Context context) {
@@ -87,11 +100,28 @@ public final class AppController implements MotionListener {
         return cameraController;
     }
 
+    public void addStateListener(@NonNull StateListener listener) {
+        if (!stateListeners.contains(listener)) {
+            stateListeners.add(listener);
+        }
+        listener.onArmedChanged(alertManager.isArmed());
+        listener.onRecordingChanged(recordingController.isRecording());
+        listener.onSensitivityChanged(alertManager.getSensitivity());
+    }
+
+    public void removeStateListener(@NonNull StateListener listener) {
+        stateListeners.remove(listener);
+    }
+
     public boolean startRecording() {
         if (recordingController.isRecording() || stoppingRecording) return false;
         handler.removeCallbacks(autoStop);
         motionScore = null;
-        return recordingController.startRecording();
+        boolean started = recordingController.startRecording();
+        if (started) {
+            notifyRecording(true);
+        }
+        return started;
     }
 
     public void stopRecording(@Nullable RecordingController.Callback callback) {
@@ -125,6 +155,7 @@ public final class AppController implements MotionListener {
         Float savedScore = motionScore;
         motionScore = null;
         stoppingRecording = false;
+        notifyRecording(false);
         if (filePath != null && savedScore != null) {
             eventRepository.addEvent(new SecurityEvent(UUID.randomUUID().toString(),
                     System.currentTimeMillis(), filePath, null,
@@ -149,5 +180,31 @@ public final class AppController implements MotionListener {
         lastMotionHandledAt = timestampMs;
         handler.postDelayed(autoStop, RECORD_DURATION_MS);
         Log.i(TAG, "motion accepted score=" + score);
+    }
+
+    private void notifyArmed(boolean armed) {
+        for (StateListener listener : stateListeners) {
+            listener.onArmedChanged(armed);
+        }
+    }
+
+    private void notifyRecording(boolean recording) {
+        for (StateListener listener : stateListeners) {
+            listener.onRecordingChanged(recording);
+        }
+    }
+
+    private void notifySensitivity(int sensitivity) {
+        for (StateListener listener : stateListeners) {
+            listener.onSensitivityChanged(sensitivity);
+        }
+    }
+
+    public interface StateListener {
+        void onArmedChanged(boolean armed);
+
+        void onRecordingChanged(boolean recording);
+
+        void onSensitivityChanged(int sensitivity);
     }
 }

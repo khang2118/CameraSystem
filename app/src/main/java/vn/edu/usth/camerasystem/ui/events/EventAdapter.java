@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import vn.edu.usth.camerasystem.R;
 import vn.edu.usth.camerasystem.storage.SecurityEvent;
 
 /** Presents security events; does not access the database directly. */
@@ -66,9 +67,9 @@ public final class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventH
         LinearLayout actions = new LinearLayout(context);
         actions.setGravity(Gravity.END);
         Button play = new Button(context);
-        play.setText("Xem video");
+        play.setText(R.string.events_play);
         Button delete = new Button(context);
-        delete.setText("Xoa");
+        delete.setText(R.string.events_delete);
         actions.addView(play);
         actions.addView(delete);
         root.addView(actions);
@@ -80,10 +81,13 @@ public final class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventH
         SecurityEvent event = events.get(position);
         holder.title.setText(dateFormat.format(new Date(event.getTimestampMs())));
         String note = event.getNote();
-        holder.note.setText(note == null || note.trim().isEmpty() ? "Su kien chuyen dong" : note);
+        holder.note.setText(note == null || note.trim().isEmpty()
+                ? holder.itemView.getContext().getString(R.string.events_default_note) : note);
         String videoPath = event.getVideoPath();
         boolean hasVideo = videoPath != null && !videoPath.trim().isEmpty();
-        holder.path.setText(hasVideo ? "Video: " + videoPath : "Khong co video dinh kem");
+        holder.path.setText(hasVideo
+                ? holder.itemView.getContext().getString(R.string.events_video_path, videoPath)
+                : holder.itemView.getContext().getString(R.string.events_no_attachment));
         holder.play.setEnabled(hasVideo);
         holder.play.setOnClickListener(v -> listener.onPlay(event));
         holder.delete.setOnClickListener(v -> listener.onDelete(event));
